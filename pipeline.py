@@ -1,0 +1,157 @@
+# Bismillah
+# Starting project on 07-01-1447 - 03-07-2025
+
+# This file contains the backend logic for Part A (transcription, translation, summarization, embedding)
+
+import os
+import uuid
+import torch
+import logging
+from datetime import datetime
+from transformers import pipeline, AutoTokenizer, AutoModel
+import whisper
+from deep_translator import GoogleTranslator
+from langdetect import detect
+from pymilvus import Collection, connections, FieldSchema, CollectionSchema, DataType
+
+# -------------------- Setup logging --------------------
+logging.basicConfig(
+    filename='video_pipeline.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+# -------------------- Milvus Configuration --------------------
+MILVUS_COLLECTION_NAME = "video_embeddings"
+connections.connect("default", host="localhost", port="19530")
+
+fields = [
+    FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
+    FieldSchema(name="video_path", dtype=DataType.VARCHAR, max_length=500),
+    FieldSchema(name="transcript_path", dtype=DataType.VARCHAR, max_length=500),
+    FieldSchema(name="translation_path", dtype=DataType.VARCHAR, max_length=500),
+    FieldSchema(name="summary_path", dtype=DataType.VARCHAR, max_length=500),
+    FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
+]
+schema = CollectionSchema(fields)
+if MILVUS_COLLECTION_NAME not in list(Collection.list()):
+    collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
+else:
+    collection = Collection(name=MILVUS_COLLECTION_NAME)
+
+# -------------------- Step 1: Transcribe video using Whisper --------------------
+def transcribe_video(video_path):
+    model = whisper.load_model("base")
+    result = model.transcribe(video_path)
+    transcript = result['text']
+    return transcript
+
+# -------------------- Step 2: Translate transcript to English if needed --------------------
+def translate_to_english(text):
+    try:
+        lang = detect(text)
+    except:
+        lang = 'unknown'
+    if lang != 'en':
+        logging.info(f"Translating from {lang} to English.")
+        return GoogleTranslator(source=lang, target='en').translate(text) # changed source from 'auto' to lang
+    else:
+        return text
+
+# -------------------- Step 3: Summarize translated transcript --------------------
+# def summarize_text(text):
+#     summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-6-6")  # Uses specific model
+#     summarized = summarizer(text, max_length=100, min_length=25, do_sample=False)
+#     return summarized[0]['summary_text']
+
+import re
+def clean_transcription(text):
+    # Remove timestamps (e.g., [00:01:23]) and common filler words
+    text = re.sub(r'\[\d{2}:\d{2}:\d{2}\]', '', text)
+    text = re.sub(r'\b(um|uh|like|you know)\b', '', text, flags=re.IGNORECASE)
+    return text.strip()
+
+# Using Summa for extractive summarization rather than abstractive summarization
+# Abstractive summarization just finds important sentences, less exhaustive
+# abstractive summarization is more complex and requires more resources, generates a summary in its own words
+# In addition, it has no strict length limit, so it can generate longer summaries
+from summa import summarizer
+def summarize_text(text):
+    cleaned_text = clean_transcription(text)
+    return summarizer.summarize(cleaned_text, ratio=0.25) # Summarize to 25% of original length
+
+# -------------------- Step 4: Generate embedding using BGE --------------------
+class BGEEmbedder:
+    def __init__(self):
+        self.tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en")
+        self.model = AutoModel.from_pretrained("BAAI/bge-small-en")
+
+    def get_embedding(self, text):
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+        with torch.no_grad():
+            model_output = self.model(**inputs)
+        embedding = model_output.last_hidden_state[:, 0, :].squeeze().numpy()
+        return embedding.tolist()
+
+# -------------------- Step 5: Full processing pipeline --------------------
+def process_video(video_path, base_save_dir):
+    guid = str(uuid.uuid4())
+    logging.info(f"Processing started for video: {video_path} with GUID: {guid}")
+
+    # Prepare separate directories
+    dirs = {
+        'video': os.path.join(base_save_dir, 'videos'),
+        'transcripts': os.path.join(base_save_dir, 'transcripts'),
+        'translations': os.path.join(base_save_dir, 'translations'),
+        'summaries': os.path.join(base_save_dir, 'summaries'),
+        'embeddings': os.path.join(base_save_dir, 'embeddings')
+    }
+    for d in dirs.values():
+        os.makedirs(d, exist_ok=True)
+
+    # Step 0: Save renamed video
+    new_video_path = os.path.join(dirs['video'], f"{guid}.mp4")
+    os.rename(video_path, new_video_path)
+
+    # Step 1: Transcription
+    transcript = transcribe_video(new_video_path)
+    transcript_path = os.path.join(dirs['transcripts'], f"{guid}_transcript.txt")
+    with open(transcript_path, "w", encoding="utf-8") as f:
+        f.write(transcript)
+
+    # Step 2: Translation
+    translated = translate_to_english(transcript)
+    translation_path = os.path.join(dirs['translations'], f"{guid}_translated_transcript.txt")
+    with open(translation_path, "w", encoding="utf-8") as f:
+        f.write(translated)
+
+    # Step 3: Summarization
+    summary = summarize_text(translated)
+    summary_path = os.path.join(dirs['summaries'], f"{guid}_summary.txt")
+    with open(summary_path, "w", encoding="utf-8") as f:
+        f.write(summary)
+
+    # Step 4: Embedding
+    embedder = BGEEmbedder()
+    embedding = embedder.get_embedding(summary)
+    embedding_path = os.path.join(dirs['embeddings'], f"{guid}_embedding_vector.txt")
+    with open(embedding_path, "w", encoding="utf-8") as f:
+        f.write(",".join([str(x) for x in embedding]))
+
+    # Step 5: Store all paths in Milvus
+    collection.insert([
+        [guid],
+        [new_video_path],
+        [transcript_path],
+        [translation_path],
+        [summary_path],
+        [embedding]
+    ])
+    collection.flush()
+    logging.info(f"Stored GUID {guid} in Milvus with all file paths.")
+
+    logging.info(f"Processing completed for GUID: {guid}")
+    return guid
+
+# Example usage:
+# process_video("sample.mp4", "processed")
