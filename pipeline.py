@@ -34,10 +34,11 @@ fields = [
     FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
 ]
 schema = CollectionSchema(fields)
-if MILVUS_COLLECTION_NAME not in list(Collection.list()):
-    collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
-else:
-    collection = Collection(name=MILVUS_COLLECTION_NAME)
+# if MILVUS_COLLECTION_NAME not in list(Collection.list()):
+#     collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
+# else:
+#     collection = Collection(name=MILVUS_COLLECTION_NAME)
+collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
 
 # -------------------- Step 1: Transcribe video using Whisper --------------------
 def transcribe_video(video_path):
@@ -95,9 +96,11 @@ class BGEEmbedder:
 
 # -------------------- Step 5: Full processing pipeline --------------------
 def process_video(video_path, base_save_dir):
+    # generate a unique GUID for this video processing
     guid = str(uuid.uuid4())
     logging.info(f"Processing started for video: {video_path} with GUID: {guid}")
 
+    print(f"Processing video: {video_path} with GUID: {guid}")
     # Prepare separate directories
     dirs = {
         'video': os.path.join(base_save_dir, 'videos'),
@@ -110,28 +113,33 @@ def process_video(video_path, base_save_dir):
         os.makedirs(d, exist_ok=True)
 
     # Step 0: Save renamed video
+    print(f"Step 0: Renaming video to {guid}.mp4")
     new_video_path = os.path.join(dirs['video'], f"{guid}.mp4")
     os.rename(video_path, new_video_path)
 
     # Step 1: Transcription
+    print(f"Step 1: Transcribing video {new_video_path}")
     transcript = transcribe_video(new_video_path)
     transcript_path = os.path.join(dirs['transcripts'], f"{guid}_transcript.txt")
     with open(transcript_path, "w", encoding="utf-8") as f:
         f.write(transcript)
 
     # Step 2: Translation
+    print(f"Step 2: Translating transcript for GUID {guid}")
     translated = translate_to_english(transcript)
     translation_path = os.path.join(dirs['translations'], f"{guid}_translated_transcript.txt")
     with open(translation_path, "w", encoding="utf-8") as f:
         f.write(translated)
 
-    # Step 3: Summarization
+    # Step 3: 
+    print(f"Step 3: Summarizing translated transcript for GUID {guid}")
     summary = summarize_text(translated)
     summary_path = os.path.join(dirs['summaries'], f"{guid}_summary.txt")
     with open(summary_path, "w", encoding="utf-8") as f:
         f.write(summary)
 
     # Step 4: Embedding
+    print(f"Step 4: Generating embedding for summary for GUID {guid}")
     embedder = BGEEmbedder()
     embedding = embedder.get_embedding(summary)
     embedding_path = os.path.join(dirs['embeddings'], f"{guid}_embedding_vector.txt")
@@ -139,6 +147,7 @@ def process_video(video_path, base_save_dir):
         f.write(",".join([str(x) for x in embedding]))
 
     # Step 5: Store all paths in Milvus
+    print(f"Step 5: Storing GUID {guid} in Milvus")
     collection.insert([
         [guid],
         [new_video_path],
@@ -151,6 +160,7 @@ def process_video(video_path, base_save_dir):
     logging.info(f"Stored GUID {guid} in Milvus with all file paths.")
 
     logging.info(f"Processing completed for GUID: {guid}")
+    print(f"Processing completed for GUID: {guid}")
     return guid
 
 # Example usage:

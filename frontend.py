@@ -50,7 +50,7 @@ class VideoUploader(QWidget):
     def process_in_background(self, video_path):
         try:
             self.update_progress(10)
-            guid = process_video(video_path, save_dir="processed_videos")
+            guid = process_video(video_path, "processed_videos")
             self.update_progress(100)
             self.status_label.setText(f"Done! GUID: {guid}")
         except Exception as e:
