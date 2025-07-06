@@ -4,9 +4,11 @@
 # This file contains the backend logic for Part A (transcription, translation, summarization, embedding)
 
 import os
+import shutil
 import uuid
 import torch
 import logging
+import shutil
 from datetime import datetime
 from transformers import pipeline, AutoTokenizer, AutoModel
 import whisper
@@ -42,7 +44,9 @@ collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
 
 # -------------------- Step 1: Transcribe video using Whisper --------------------
 def transcribe_video(video_path):
+    print("Loading Whisper model...")
     model = whisper.load_model("base")
+    print("Transcribing the video...")
     result = model.transcribe(video_path)
     transcript = result['text']
     return transcript
@@ -115,7 +119,17 @@ def process_video(video_path, base_save_dir):
     # Step 0: Save renamed video
     print(f"Step 0: Renaming video to {guid}.mp4")
     new_video_path = os.path.join(dirs['video'], f"{guid}.mp4")
-    os.rename(video_path, new_video_path)
+    # os.rename(video_path, new_video_path)
+    # Move video file to new path
+    # shutil.move(video_path, new_video_path)
+    # video_path = os.path.abspath(video_path)
+    # new_video_path = os.path.abspath(os.path.join(dirs['video'], f"{guid}.mp4"))
+    shutil.copyfile(video_path, new_video_path)
+
+
+    print(f"New video path: {new_video_path}")
+    print(f"File exists: {os.path.exists(new_video_path)}")
+    logging.info(f"Video saved at {new_video_path}")
 
     # Step 1: Transcription
     print(f"Step 1: Transcribing video {new_video_path}")

@@ -1,0 +1,22 @@
+2025-07-05 16:08:44,991 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:14:21,365 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:17:09,931 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:17:44,565 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:18:18,423 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:20:25,608 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:20:34,803 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/hold_on.mp4 with GUID: 4deb04ad-bdac-4ac5-8c77-cc741b445f9a
+2025-07-05 16:26:14,231 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:26:34,975 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/the deeds make the man.mp4 with GUID: 61a12ed8-0c53-4077-8188-6e7a1a534417
+2025-07-05 16:31:12,574 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:36:04,566 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:36:18,992 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/consequences.mp4 with GUID: f4841652-3abe-4530-a146-bc332538a764
+2025-07-05 16:42:38,078 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:42:51,215 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/consequences.mp4 with GUID: 176fd5ed-5b93-4392-b606-5882792ef9f3
+2025-07-05 16:46:49,626 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-05 16:46:57,527 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/consequences.mp4 with GUID: ae919a5d-7e6b-4967-90ed-cf48ab4bb4f8
+2025-07-05 16:46:57,537 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\ae919a5d-7e6b-4967-90ed-cf48ab4bb4f8.mp4
+2025-07-06 14:24:55,710 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-06 14:28:12,281 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/consequences.mp4 with GUID: c42e7cff-2623-4c43-965c-a5a8fe5b900c
+2025-07-06 14:28:12,292 - INFO - Video saved at processed_videos\videos\c42e7cff-2623-4c43-965c-a5a8fe5b900c.mp4
+2025-07-06 14:28:29,691 - INFO - Stored GUID c42e7cff-2623-4c43-965c-a5a8fe5b900c in Milvus with all file paths.
+2025-07-06 14:28:29,691 - INFO - Processing completed for GUID: c42e7cff-2623-4c43-965c-a5a8fe5b900c
