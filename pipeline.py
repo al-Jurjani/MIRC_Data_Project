@@ -99,7 +99,7 @@ class BGEEmbedder:
         return embedding.tolist()
 
 # -------------------- Step 5: Full processing pipeline --------------------
-def process_video(video_path, base_save_dir):
+def process_video(video_path, base_save_dir, progress_callback=None):
     # generate a unique GUID for this video processing
     guid = str(uuid.uuid4())
     logging.info(f"Processing started for video: {video_path} with GUID: {guid}")
@@ -125,6 +125,7 @@ def process_video(video_path, base_save_dir):
     # video_path = os.path.abspath(video_path)
     # new_video_path = os.path.abspath(os.path.join(dirs['video'], f"{guid}.mp4"))
     shutil.copyfile(video_path, new_video_path)
+    if progress_callback: progress_callback.emit(20)
 
 
     print(f"New video path: {new_video_path}")
@@ -137,6 +138,7 @@ def process_video(video_path, base_save_dir):
     transcript_path = os.path.join(dirs['transcripts'], f"{guid}_transcript.txt")
     with open(transcript_path, "w", encoding="utf-8") as f:
         f.write(transcript)
+    if progress_callback: progress_callback.emit(40)
 
     # Step 2: Translation
     print(f"Step 2: Translating transcript for GUID {guid}")
@@ -144,6 +146,7 @@ def process_video(video_path, base_save_dir):
     translation_path = os.path.join(dirs['translations'], f"{guid}_translated_transcript.txt")
     with open(translation_path, "w", encoding="utf-8") as f:
         f.write(translated)
+    if progress_callback: progress_callback.emit(60)
 
     # Step 3: 
     print(f"Step 3: Summarizing translated transcript for GUID {guid}")
@@ -151,6 +154,7 @@ def process_video(video_path, base_save_dir):
     summary_path = os.path.join(dirs['summaries'], f"{guid}_summary.txt")
     with open(summary_path, "w", encoding="utf-8") as f:
         f.write(summary)
+    if progress_callback: progress_callback.emit(80)
 
     # Step 4: Embedding
     print(f"Step 4: Generating embedding for summary for GUID {guid}")

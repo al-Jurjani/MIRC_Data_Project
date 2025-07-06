@@ -3,64 +3,144 @@
 
 # This file contains the frontend for Part A (transcription, translation, summarization, embedding)
 
+# import sys
+# import threading
+# from PyQt5.QtWidgets import (
+#     QApplication, QWidget, QPushButton, QLabel,
+#     QVBoxLayout, QFileDialog, QProgressBar, QMessageBox
+# )
+# from PyQt5.QtCore import Qt
+# from pipeline import process_video
+
+# class VideoUploader(QWidget):
+#     def __init__(self):
+#         super().__init__()
+#         self.initUI()
+
+#     def initUI(self):
+#         self.setWindowTitle('Video Uploader and Processor')
+
+#         layout = QVBoxLayout()
+
+#         self.label = QLabel('Select a video to process:', self)
+#         layout.addWidget(self.label)
+
+#         self.upload_btn = QPushButton('Choose Video')
+#         self.upload_btn.clicked.connect(self.choose_video)
+#         layout.addWidget(self.upload_btn)
+
+#         self.progress = QProgressBar(self)
+#         self.progress.setValue(0)
+#         layout.addWidget(self.progress)
+
+#         self.status_label = QLabel('', self)
+#         layout.addWidget(self.status_label)
+
+#         self.setLayout(layout)
+#         self.resize(300, 150)
+
+#     def choose_video(self):
+#         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Video File', '', 'MP4 Files (*.mp4)')
+#         if file_path:
+#             self.progress.setValue(0)
+#             self.status_label.setText("Processing...")
+#             thread = threading.Thread(target=self.process_in_background, args=(file_path,))
+#             thread.start()
+
+#     def process_in_background(self, video_path):
+#         try:
+#             self.update_progress(10)
+#             guid = process_video(video_path, "processed_videos")
+#             self.update_progress(100)
+#             self.status_label.setText(f"Done! GUID: {guid}")
+#         except Exception as e:
+#             self.status_label.setText("Error during processing.")
+#             QMessageBox.critical(self, "Error", str(e))
+
+#     def update_progress(self, value):
+#         self.progress.setValue(value)
+
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     window = VideoUploader()
+#     window.show()
+#     sys.exit(app.exec_())
+
 import sys
-import threading
+import os
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QPushButton, QLabel,
-    QVBoxLayout, QFileDialog, QProgressBar, QMessageBox
+    QApplication, QWidget, QVBoxLayout, QLabel,
+    QPushButton, QFileDialog, QProgressBar, QMessageBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from pipeline import process_video
+
+class VideoProcessingThread(QThread):
+    progress_update = pyqtSignal(int)
+    finished = pyqtSignal(str)
+    failed = pyqtSignal(str)
+
+    def __init__(self, video_path, base_dir):
+        super().__init__()
+        self.video_path = video_path
+        self.base_dir = base_dir
+
+    def run(self):
+        try:
+            self.progress_update.emit(10)
+            guid = process_video(self.video_path, self.base_dir, self.progress_update)
+            self.progress_update.emit(100)
+            self.finished.emit(guid)
+        except Exception as e:
+            self.failed.emit(str(e))
 
 class VideoUploader(QWidget):
     def __init__(self):
         super().__init__()
-        self.initUI()
+        self.setWindowTitle("Video Uploader")
+        self.resize(400, 150)
 
-    def initUI(self):
-        self.setWindowTitle('Video Uploader and Processor')
+        self.layout = QVBoxLayout()
 
-        layout = QVBoxLayout()
+        self.label = QLabel("Upload an MP4 video for processing")
+        self.label.setAlignment(Qt.AlignCenter)
 
-        self.label = QLabel('Select a video to process:', self)
-        layout.addWidget(self.label)
+        self.upload_btn = QPushButton("Upload Video")
+        self.upload_btn.clicked.connect(self.upload_video)
 
-        self.upload_btn = QPushButton('Choose Video')
-        self.upload_btn.clicked.connect(self.choose_video)
-        layout.addWidget(self.upload_btn)
-
-        self.progress = QProgressBar(self)
+        self.progress = QProgressBar()
         self.progress.setValue(0)
-        layout.addWidget(self.progress)
 
-        self.status_label = QLabel('', self)
-        layout.addWidget(self.status_label)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.upload_btn)
+        self.layout.addWidget(self.progress)
 
-        self.setLayout(layout)
-        self.resize(300, 150)
+        self.setLayout(self.layout)
 
-    def choose_video(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Video File', '', 'MP4 Files (*.mp4)')
+    def upload_video(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select MP4 Video", "", "Video Files (*.mp4)")
         if file_path:
-            self.progress.setValue(0)
-            self.status_label.setText("Processing...")
-            thread = threading.Thread(target=self.process_in_background, args=(file_path,))
-            thread.start()
+            self.upload_btn.setEnabled(False)
+            self.progress.setValue(5)
+            base_dir = os.path.abspath("processed_videos")
 
-    def process_in_background(self, video_path):
-        try:
-            self.update_progress(10)
-            guid = process_video(video_path, "processed_videos")
-            self.update_progress(100)
-            self.status_label.setText(f"Done! GUID: {guid}")
-        except Exception as e:
-            self.status_label.setText("Error during processing.")
-            QMessageBox.critical(self, "Error", str(e))
+            self.thread = VideoProcessingThread(file_path, base_dir)
+            self.thread.progress_update.connect(self.progress.setValue)
+            self.thread.finished.connect(self.on_success)
+            self.thread.failed.connect(self.on_failure)
+            self.thread.start()
 
-    def update_progress(self, value):
-        self.progress.setValue(value)
+    def on_success(self, guid):
+        QMessageBox.information(self, "Success", f"Video processed successfully. GUID: {guid}")
+        self.upload_btn.setEnabled(True)
+        self.progress.setValue(100)
 
-if __name__ == '__main__':
+    def on_failure(self, error_msg):
+        QMessageBox.critical(self, "Error", f"Failed to process video:\n{error_msg}")
+        self.upload_btn.setEnabled(True)
+        self.progress.setValue(0)
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = VideoUploader()
     window.show()
