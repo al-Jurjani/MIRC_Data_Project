@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 # -------------------- Milvus Configuration --------------------
-MILVUS_COLLECTION_NAME = "video_embeddings"
+MILVUS_COLLECTION_NAME = "video_embeddings_v2"
 connections.connect("default", host="localhost", port="19530")
 
 def clear_database():
@@ -33,19 +33,31 @@ def clear_database():
     collection.drop()
     fields = [
         FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
+        FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=500),  # New title field
         FieldSchema(name="video_path", dtype=DataType.VARCHAR, max_length=500),
         FieldSchema(name="transcript_path", dtype=DataType.VARCHAR, max_length=500),
         FieldSchema(name="translation_path", dtype=DataType.VARCHAR, max_length=500),
         FieldSchema(name="summary_path", dtype=DataType.VARCHAR, max_length=500),
-        FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=500),  # New title field
         FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
     ]
     schema = CollectionSchema(fields)
     collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
     logging.info("Milvus database cleared and recreated with new schema.")
 
+# Old fields
+# fields = [
+#     FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
+#     FieldSchema(name="video_path", dtype=DataType.VARCHAR, max_length=500),
+#     FieldSchema(name="transcript_path", dtype=DataType.VARCHAR, max_length=500),
+#     FieldSchema(name="translation_path", dtype=DataType.VARCHAR, max_length=500),
+#     FieldSchema(name="summary_path", dtype=DataType.VARCHAR, max_length=500),
+#     FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
+# ]
+
+# New fields
 fields = [
     FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
+    FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=500),  # New title field
     FieldSchema(name="video_path", dtype=DataType.VARCHAR, max_length=500),
     FieldSchema(name="transcript_path", dtype=DataType.VARCHAR, max_length=500),
     FieldSchema(name="translation_path", dtype=DataType.VARCHAR, max_length=500),
@@ -135,6 +147,7 @@ def process_video(video_path, base_save_dir, progress_callback=None):
 
     # Step 0: Save renamed video
     print(f"Step 0: Renaming video to {guid}.mp4")
+    original_title = os.path.basename(video_path)  # Capture original video title
     new_video_path = os.path.join(dirs['video'], f"{guid}.mp4")
     # os.rename(video_path, new_video_path)
     # Move video file to new path
@@ -185,6 +198,7 @@ def process_video(video_path, base_save_dir, progress_callback=None):
     print(f"Step 5: Storing GUID {guid} in Milvus")
     collection.insert([
         [guid],
+        [original_title],  # Store the original title
         [new_video_path],
         [transcript_path],
         [translation_path],

@@ -46,3 +46,56 @@
 2025-07-08 22:00:33,503 - INFO - Translating from ar to English.
 2025-07-08 22:00:40,983 - INFO - Stored GUID 0dee6ae6-67db-4b35-86a1-2d917c40fcad in Milvus with all file paths.
 2025-07-08 22:00:40,983 - INFO - Processing completed for GUID: 0dee6ae6-67db-4b35-86a1-2d917c40fcad
+2025-07-09 23:39:50,565 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-09 23:40:14,849 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] Attack your day.mp4 with GUID: c6747bcc-e1c8-4a21-abf7-ef361a228de5
+2025-07-09 23:40:14,883 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\c6747bcc-e1c8-4a21-abf7-ef361a228de5.mp4
+2025-07-09 23:40:33,821 - INFO - Stored GUID c6747bcc-e1c8-4a21-abf7-ef361a228de5 in Milvus with all file paths.
+2025-07-09 23:40:33,822 - INFO - Processing completed for GUID: c6747bcc-e1c8-4a21-abf7-ef361a228de5
+2025-07-09 23:45:53,407 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-09 23:46:02,449 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] Attack your day.mp4 with GUID: d47a8342-d8e1-463c-99a6-71d20c20f517
+2025-07-09 23:46:02,480 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\d47a8342-d8e1-463c-99a6-71d20c20f517.mp4
+2025-07-09 23:46:15,604 - INFO - Stored GUID d47a8342-d8e1-463c-99a6-71d20c20f517 in Milvus with all file paths.
+2025-07-09 23:46:15,604 - INFO - Processing completed for GUID: d47a8342-d8e1-463c-99a6-71d20c20f517
+2025-07-09 23:47:34,671 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-09 23:48:01,103 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] CURE for HARD HEARTs - Sheikh ibn Uthaymin \u0631\u062d\u0645\u0647 \u0627\u0644\u0644\u0647.mp4 with GUID: 1dfc0065-f881-4d5b-8d32-724b7fb9a495
+2025-07-09 23:48:01,146 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\1dfc0065-f881-4d5b-8d32-724b7fb9a495.mp4
+2025-07-09 23:48:24,928 - INFO - Translating from ar to English.
+2025-07-09 23:48:31,586 - INFO - Stored GUID 1dfc0065-f881-4d5b-8d32-724b7fb9a495 in Milvus with all file paths.
+2025-07-09 23:48:31,586 - INFO - Processing completed for GUID: 1dfc0065-f881-4d5b-8d32-724b7fb9a495
+2025-07-09 23:49:10,545 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] O Brothers, What is This Worldly Life_! Shaykh Sulayman al-Ruhayli \u062d\u0641\u0638\u0647 \u0627\u0644\u0644\u0647.mp4 with GUID: a53a24a9-6bea-43b9-91fb-265898e28dcd
+2025-07-09 23:49:10,557 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\a53a24a9-6bea-43b9-91fb-265898e28dcd.mp4
+2025-07-09 23:49:30,866 - INFO - Translating from ar to English.
+2025-07-09 23:49:35,549 - INFO - Stored GUID a53a24a9-6bea-43b9-91fb-265898e28dcd in Milvus with all file paths.
+2025-07-09 23:49:35,549 - INFO - Processing completed for GUID: a53a24a9-6bea-43b9-91fb-265898e28dcd
+2025-07-09 23:49:49,177 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] O Youth, Take Advantage of This Time!.mp4 with GUID: dc892fe1-b3b3-4f17-a2ac-f2cc3d6a9a15
+2025-07-09 23:49:49,195 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\dc892fe1-b3b3-4f17-a2ac-f2cc3d6a9a15.mp4
+2025-07-09 23:50:10,515 - INFO - Translating from ar to English.
+2025-07-09 23:50:16,187 - INFO - Stored GUID dc892fe1-b3b3-4f17-a2ac-f2cc3d6a9a15 in Milvus with all file paths.
+2025-07-09 23:50:16,187 - INFO - Processing completed for GUID: dc892fe1-b3b3-4f17-a2ac-f2cc3d6a9a15
+2025-07-09 23:50:28,151 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] Say yes to your goals and dreams.mp4 with GUID: c651e04b-e422-4997-bd18-f775862d034b
+2025-07-09 23:50:28,181 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\c651e04b-e422-4997-bd18-f775862d034b.mp4
+2025-07-09 23:50:37,844 - INFO - Stored GUID c651e04b-e422-4997-bd18-f775862d034b in Milvus with all file paths.
+2025-07-09 23:50:37,844 - INFO - Processing completed for GUID: c651e04b-e422-4997-bd18-f775862d034b
+2025-07-09 23:50:53,118 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] The Two Dangerous Companions of Our Times.mp4 with GUID: a8dd603d-49fe-4e39-b456-9a62255bf69d
+2025-07-09 23:50:53,204 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\a8dd603d-49fe-4e39-b456-9a62255bf69d.mp4
+2025-07-09 23:51:59,005 - INFO - Translating from ar to English.
+2025-07-09 23:52:04,246 - INFO - Stored GUID a8dd603d-49fe-4e39-b456-9a62255bf69d in Milvus with all file paths.
+2025-07-09 23:52:04,247 - INFO - Processing completed for GUID: a8dd603d-49fe-4e39-b456-9a62255bf69d
+2025-07-09 23:52:29,285 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] This is the Book!.mp4 with GUID: 5fd83fa0-15d7-4d0c-bed0-22b0dc9eb050
+2025-07-09 23:52:29,320 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\5fd83fa0-15d7-4d0c-bed0-22b0dc9eb050.mp4
+2025-07-09 23:52:40,603 - INFO - Stored GUID 5fd83fa0-15d7-4d0c-bed0-22b0dc9eb050 in Milvus with all file paths.
+2025-07-09 23:52:40,603 - INFO - Processing completed for GUID: 5fd83fa0-15d7-4d0c-bed0-22b0dc9eb050
+2025-07-09 23:52:54,757 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] You Can't Achieve Anything Without This...mp4 with GUID: 3b0177c2-9675-4db3-a0ae-4f3170e1c9e8
+2025-07-09 23:52:54,764 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\3b0177c2-9675-4db3-a0ae-4f3170e1c9e8.mp4
+2025-07-09 23:53:12,957 - INFO - Stored GUID 3b0177c2-9675-4db3-a0ae-4f3170e1c9e8 in Milvus with all file paths.
+2025-07-09 23:53:12,957 - INFO - Processing completed for GUID: 3b0177c2-9675-4db3-a0ae-4f3170e1c9e8
+2025-07-09 23:53:20,148 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/don't say 'if'.mp4 with GUID: c45dd83a-09f6-494b-9ebf-b9d3f1609246
+2025-07-09 23:53:20,173 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\c45dd83a-09f6-494b-9ebf-b9d3f1609246.mp4
+2025-07-09 23:53:39,909 - INFO - Translating from ar to English.
+2025-07-09 23:53:45,147 - INFO - Stored GUID c45dd83a-09f6-494b-9ebf-b9d3f1609246 in Milvus with all file paths.
+2025-07-09 23:53:45,147 - INFO - Processing completed for GUID: c45dd83a-09f6-494b-9ebf-b9d3f1609246
+2025-07-09 23:54:04,611 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/The Two Dangerous Companions of Our Times.mp4 with GUID: 3a437504-2843-41e1-a390-a20dda1dec6e
+2025-07-09 23:54:04,625 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\3a437504-2843-41e1-a390-a20dda1dec6e.mp4
+2025-07-09 23:55:13,175 - INFO - Translating from ar to English.
+2025-07-09 23:55:18,058 - INFO - Stored GUID 3a437504-2843-41e1-a390-a20dda1dec6e in Milvus with all file paths.
+2025-07-09 23:55:18,058 - INFO - Processing completed for GUID: 3a437504-2843-41e1-a390-a20dda1dec6e
