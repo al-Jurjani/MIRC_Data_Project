@@ -34,3 +34,15 @@
 2025-07-06 14:49:37,672 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\00be99ca-065e-476e-b590-bb27f7656f20.mp4
 2025-07-06 14:49:51,977 - INFO - Stored GUID 00be99ca-065e-476e-b590-bb27f7656f20 in Milvus with all file paths.
 2025-07-06 14:49:51,977 - INFO - Processing completed for GUID: 00be99ca-065e-476e-b590-bb27f7656f20
+2025-07-08 21:37:20,614 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-08 21:38:16,195 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/real_scooter_bruh.mp4 with GUID: 2076a4f6-bd39-479c-b5c2-25f77ebe840a
+2025-07-08 21:38:16,216 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\2076a4f6-bd39-479c-b5c2-25f77ebe840a.mp4
+2025-07-08 21:38:27,774 - INFO - Translating from ro to English.
+2025-07-08 21:38:36,364 - INFO - Stored GUID 2076a4f6-bd39-479c-b5c2-25f77ebe840a in Milvus with all file paths.
+2025-07-08 21:38:36,364 - INFO - Processing completed for GUID: 2076a4f6-bd39-479c-b5c2-25f77ebe840a
+2025-07-08 21:58:11,156 - INFO - 'pattern' package not found; tag filters are not available for English
+2025-07-08 21:58:40,462 - INFO - Processing started for video: C:/Users/Zuhair/Desktop/Naseeha/[S] The Two Dangerous Companions of Our Times.mp4 with GUID: 0dee6ae6-67db-4b35-86a1-2d917c40fcad
+2025-07-08 21:58:40,548 - INFO - Video saved at C:\Users\Zuhair\Programming Projects\Python\MIRC_Projects\MIRC_Data_Project\processed_videos\videos\0dee6ae6-67db-4b35-86a1-2d917c40fcad.mp4
+2025-07-08 22:00:33,503 - INFO - Translating from ar to English.
+2025-07-08 22:00:40,983 - INFO - Stored GUID 0dee6ae6-67db-4b35-86a1-2d917c40fcad in Milvus with all file paths.
+2025-07-08 22:00:40,983 - INFO - Processing completed for GUID: 0dee6ae6-67db-4b35-86a1-2d917c40fcad
