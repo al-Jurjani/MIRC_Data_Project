@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QMimeData
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 from main.pipeline import process_video
 from main.query_backend import search_similar
-from chat_handler_service import rerank_top_matches
+from main.chat_handler_service import rerank_top_matches
 
 class VideoProcessingThread(QThread):
     progress_update = pyqtSignal(int)
