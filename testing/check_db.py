@@ -22,7 +22,7 @@ collection.load()
 results = collection.query(
     expr="",
     output_fields=["guid", "title", "video_path", "transcript_path", "translation_path", "summary_path", "embedding"],
-    limit=10
+    limit=15
 )
 
 # for r in results:

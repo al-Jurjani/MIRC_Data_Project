@@ -4,7 +4,7 @@
 # File: chat_handler_service.py
 # Ranks top-k results from Milvus using a local LLM based on transcript relevance
 
-from llm_ranker import LocalLLMRanker
+from main.llm_ranker import LocalLLMRanker
 
 ranker = LocalLLMRanker()
 

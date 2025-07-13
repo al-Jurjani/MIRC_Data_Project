@@ -2,3 +2,4 @@ __pycache__/
 processed_videos/
 *.mp4
 volumes/
+*.log
