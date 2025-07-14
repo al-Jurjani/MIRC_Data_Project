@@ -93,10 +93,12 @@ def translate_to_english(text):
         return text
 
 # -------------------- Step 3: Summarize translated transcript --------------------
-# def summarize_text(text):
-#     summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-6-6")  # Uses specific model
-#     summarized = summarizer(text, max_length=100, min_length=25, do_sample=False)
-#     return summarized[0]['summary_text']
+from transformers import pipeline
+def summarize_text(text):
+    cleaned_text = clean_transcription(text)
+    summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-6-6")
+    summarized = summarizer(cleaned_text, max_length=500, min_length=250, do_sample=False)
+    return summarized[0]['summary_text']
 
 import re
 def clean_transcription(text):
@@ -109,10 +111,10 @@ def clean_transcription(text):
 # Abstractive summarization just finds important sentences, less exhaustive
 # abstractive summarization is more complex and requires more resources, generates a summary in its own words
 # In addition, it has no strict length limit, so it can generate longer summaries
-from summa import summarizer
-def summarize_text(text):
-    cleaned_text = clean_transcription(text)
-    return summarizer.summarize(cleaned_text, ratio=0.25) # Summarize to 25% of original length
+# from summa import summarizer
+# def summarize_text(text):
+#     cleaned_text = clean_transcription(text)
+#     return summarizer.summarize(cleaned_text, ratio=0.25) # Summarize to 25% of original length
 
 # -------------------- Step 4: Generate embedding using BGE --------------------
 class BGEEmbedder:
@@ -128,6 +130,13 @@ class BGEEmbedder:
         return embedding.tolist()
 
 # -------------------- Step 5: Full processing pipeline --------------------
+
+def split_into_sentences(text):
+    import re
+    # Split on period, exclamation, or question mark followed by space or end of string
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    return [s for s in sentences if s]
+
 def process_video(video_path, base_save_dir, progress_callback=None):
     # generate a unique GUID for this video processing
     guid = str(uuid.uuid4())
@@ -149,11 +158,6 @@ def process_video(video_path, base_save_dir, progress_callback=None):
     print(f"Step 0: Renaming video to {guid}.mp4")
     original_title = os.path.basename(video_path)  # Capture original video title
     new_video_path = os.path.join(dirs['video'], f"{guid}.mp4")
-    # os.rename(video_path, new_video_path)
-    # Move video file to new path
-    # shutil.move(video_path, new_video_path)
-    # video_path = os.path.abspath(video_path)
-    # new_video_path = os.path.abspath(os.path.join(dirs['video'], f"{guid}.mp4"))
     shutil.copyfile(video_path, new_video_path)
     if progress_callback: progress_callback.emit(20)
 
@@ -165,17 +169,19 @@ def process_video(video_path, base_save_dir, progress_callback=None):
     # Step 1: Transcription
     print(f"Step 1: Transcribing video {new_video_path}")
     transcript = transcribe_video(new_video_path)
+    transcript_sentences = split_into_sentences(transcript)
     transcript_path = os.path.join(dirs['transcripts'], f"{guid}_transcript.txt")
     with open(transcript_path, "w", encoding="utf-8") as f:
-        f.write(transcript)
+        f.write("\n".join(transcript_sentences))
     if progress_callback: progress_callback.emit(40)
 
     # Step 2: Translation
     print(f"Step 2: Translating transcript for GUID {guid}")
     translated = translate_to_english(transcript)
+    translation_sentences = split_into_sentences(translated)
     translation_path = os.path.join(dirs['translations'], f"{guid}_translated_transcript.txt")
     with open(translation_path, "w", encoding="utf-8") as f:
-        f.write(translated)
+        f.write("\n".join(translation_sentences))
     if progress_callback: progress_callback.emit(60)
 
     # Step 3: 
