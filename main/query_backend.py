@@ -11,7 +11,8 @@ import numpy as np
 import os
 
 # Connect to Milvus
-connections.connect("default", host="localhost", port="19530")
+# connections.connect("default", host="localhost", port="19530")
+connections.connect("default", host="127.0.0.1", port="19530")
 collection = Collection("video_embeddings_v2")
 collection.load()
 

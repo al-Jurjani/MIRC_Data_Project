@@ -25,7 +25,8 @@ logging.basicConfig(
 
 # -------------------- Milvus Configuration --------------------
 MILVUS_COLLECTION_NAME = "video_embeddings_v2"
-connections.connect("default", host="localhost", port="19530")
+# connections.connect("default", host="localhost", port="19530")
+connections.connect("default", host="127.0.0.1", port="19530")
 
 def clear_database():
     """Drop and recreate the Milvus collection to clear all data."""

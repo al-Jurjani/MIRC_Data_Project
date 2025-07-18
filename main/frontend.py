@@ -2,18 +2,21 @@
 # Starting project on 07-01-1447 - 03-07-2025
 
 import sys
+import shutil
 import os
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QFileDialog, QProgressBar, QMessageBox, QTabWidget,
     QLineEdit, QTableWidget, QTableWidgetItem, QListWidget, QListWidgetItem,
-    QSplitter
+    QSplitter, QHeaderView
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QMimeData
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
+
 from pipeline import process_video
 from query_backend import search_similar
 from chat_handler_service import rerank_top_matches
+from db_browser_backend import fetch_all_entries, get_file_path
 
 class VideoProcessingThread(QThread):
     progress_update = pyqtSignal(int)
@@ -295,6 +298,133 @@ class QueryTab(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Search failed:\n{str(e)}")
 
+
+
+# def create_database_browser_tab(self):
+#     widget = QWidget()
+#     layout = QVBoxLayout()
+
+#     # Search bar
+#     search_bar = QLineEdit()
+#     search_bar.setPlaceholderText("Search by GUID or Title")
+#     layout.addWidget(search_bar)
+
+#     # Table
+#     table = QTableWidget()
+#     table.setColumnCount(6)
+#     table.setHorizontalHeaderLabels([
+#         "GUID", "Title", "Video", "Transcript", "Translation", "Summary"
+#     ])
+#     table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+#     layout.addWidget(table)
+
+#     def populate_table(data):
+#         table.setRowCount(len(data))
+#         for row, item in enumerate(data):
+#             table.setItem(row, 0, QTableWidgetItem(item["guid"]))
+#             table.setItem(row, 1, QTableWidgetItem(item["title"]))
+
+#             for col_idx, key in enumerate(["video_path", "transcript_path", "translation_path", "summary_path"], start=2):
+#                 button = QPushButton("Download")
+#                 path = item[key]
+#                 button.clicked.connect(lambda _, p=path: self.download_file(p))
+#                 table.setCellWidget(row, col_idx, button)
+
+#     def filter_table():
+#         term = search_bar.text().lower()
+#         filtered = [item for item in all_data if term in item["guid"].lower() or term in item["title"].lower()]
+#         populate_table(filtered)
+
+#     search_bar.textChanged.connect(filter_table)
+
+#     all_data = fetch_all_entries()
+#     populate_table(all_data)
+
+#     widget.setLayout(layout)
+#     return widget
+
+# For Third tab of Database Browser
+class DatabaseBrowserTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        # --- Search Bar ---
+        search_layout = QHBoxLayout()
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search by GUID or Title...")
+        search_button = QPushButton("Search")
+        search_button.clicked.connect(self.perform_search)
+        search_layout.addWidget(self.search_bar)
+        search_layout.addWidget(search_button)
+        layout.addLayout(search_layout)
+
+        # --- Table Display ---
+        self.table = QTableWidget()
+        self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(["GUID", "Title", "Transcript", "Translation", "Summary", "Video"])
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.table)
+
+        self.setLayout(layout)
+        self.load_data()
+
+    def load_data(self, filter_text=""):
+        # from db_browser_backend import get_all_records
+        # records = get_all_records()
+        records = fetch_all_entries()
+
+        if filter_text:
+            filter_text = filter_text.lower()
+            records = [r for r in records if filter_text in r["guid"].lower() or filter_text in r["title"].lower()]
+
+        self.table.setRowCount(len(records))
+        for row, item in enumerate(records):
+            self.table.setItem(row, 0, QTableWidgetItem(item["guid"]))
+            self.table.setItem(row, 1, QTableWidgetItem(item["title"]))
+
+            for i, key in enumerate(["transcript_path", "translation_path", "summary_path", "video_path"], start=2):
+                button = QPushButton("Download")
+                button.clicked.connect(lambda _, path=item[key]: self.download_file(path))
+                self.table.setCellWidget(row, i, button)
+
+    def perform_search(self):
+        query = self.search_bar.text()
+        self.load_data(query)
+
+    def download_file(self, path):
+        import shutil
+        from PyQt5.QtWidgets import QFileDialog, QMessageBox
+        if not os.path.exists(path):
+            QMessageBox.critical(self, "File Not Found", f"Path does not exist:\n{path}")
+            return
+        save_path, _ = QFileDialog.getSaveFileName(self, "Save File", os.path.basename(path))
+        if save_path:
+            try:
+                shutil.copy(path, save_path)
+                QMessageBox.information(self, "Success", f"Saved to {save_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to save:\n{str(e)}")
+
+
+# Helper function to download files
+def download_file(self, source_path):
+    if not os.path.exists(source_path):
+        QMessageBox.critical(self, "Error", f"File not found:\n{source_path}")
+        return
+
+    save_path, _ = QFileDialog.getSaveFileName(self, "Save File As", os.path.basename(source_path))
+    if save_path:
+        try:
+            shutil.copy(source_path, save_path)
+            QMessageBox.information(self, "Success", "File downloaded successfully!")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to download file:\n{e}")
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -315,6 +445,8 @@ class MainWindow(QWidget):
         # Add tabs
         self.tabs.addTab(self.upload_tab, "Upload Videos")
         self.tabs.addTab(self.query_tab, "Query Database")
+        # self.tabs.addTab(self.create_database_browser_tab(), "Database Browser")
+        self.tabs.addTab(DatabaseBrowserTab(), "Database Browser")  # <- Add this line
 
         layout.addWidget(self.tabs)
         self.setLayout(layout)

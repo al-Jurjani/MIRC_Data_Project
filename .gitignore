@@ -3,3 +3,8 @@ processed_videos/
 *.mp4
 volumes/
 *.log
+main/build/
+main/db_browser_backend.py
+main/dist/
+main/frontend.spec
+main/requirements.txt
