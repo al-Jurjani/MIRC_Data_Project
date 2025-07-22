@@ -1,9 +1,6 @@
 # Bismillah
 # Starting project on 07-01-1447 - 03-07-2025
 
-# Bismillah
-# Starting project on 07-01-1447 - 03-07-2025
-
 import sys
 import shutil
 import os
@@ -11,10 +8,12 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QFileDialog, QProgressBar, QMessageBox, QTabWidget,
     QLineEdit, QTableWidget, QTableWidgetItem, QListWidget, QListWidgetItem,
-    QSplitter, QHeaderView
+    QSplitter, QHeaderView, QScrollArea, QFrame
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QMimeData
-from PyQt5.QtGui import QDragEnterEvent, QDropEvent, QPixmap
+from PyQt5.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QImage
+import cv2
+import numpy as np
 
 from pipeline import process_video
 from query_backend import search_similar
@@ -262,19 +261,155 @@ class QueryTab(QWidget):
         query_layout.addWidget(self.query_input)
         query_layout.addWidget(self.search_btn)
 
-        # Results table
-        self.results_table = QTableWidget()
-        self.results_table.setColumnCount(4)
-        self.results_table.setHorizontalHeaderLabels([
-            "Score", "Title", "Video Path", "Best Match"
-        ])
+        # Results scroll area
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        
+        # Container widget for results
+        self.results_container = QWidget()
+        self.results_layout = QVBoxLayout()
+        self.results_layout.setSpacing(10)
+        self.results_container.setLayout(self.results_layout)
+        self.scroll_area.setWidget(self.results_container)
 
         layout.addWidget(title_label)
         layout.addLayout(query_layout)
         layout.addWidget(QLabel("Search Results:"))
-        layout.addWidget(self.results_table)
+        layout.addWidget(self.scroll_area)
 
         self.setLayout(layout)
+
+    def get_video_thumbnail(self, video_path):
+        """Extract a frame from the video to use as thumbnail"""
+        try:
+            # Check if video file exists
+            if not os.path.exists(video_path):
+                return self.create_placeholder_thumbnail("File Not Found")
+            
+            # Open video file
+            cap = cv2.VideoCapture(video_path)
+            
+            if not cap.isOpened():
+                return self.create_placeholder_thumbnail("Cannot Open Video")
+            
+            # Get video properties
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            
+            # Seek to 10% into the video (usually gives a good representative frame)
+            # Avoid the very beginning which might be black or logos
+            target_frame = min(int(total_frames * 0.1), int(fps * 5))  # Max 5 seconds in
+            cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+            
+            # Read the frame
+            ret, frame = cap.read()
+            cap.release()
+            
+            if not ret or frame is None:
+                return self.create_placeholder_thumbnail("No Frame Available")
+            
+            # Convert BGR to RGB (OpenCV uses BGR, Qt uses RGB)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            
+            # Get frame dimensions
+            height, width, channels = frame_rgb.shape
+            bytes_per_line = channels * width
+            
+            # Create QImage from the frame
+            q_image = QImage(frame_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
+            
+            # Convert to QPixmap and scale
+            pixmap = QPixmap.fromImage(q_image)
+            scaled_pixmap = pixmap.scaled(120, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            
+            return scaled_pixmap
+            
+        except Exception as e:
+            print(f"Error extracting thumbnail from {video_path}: {str(e)}")
+            return self.create_placeholder_thumbnail("Extraction Error")
+    
+    def create_placeholder_thumbnail(self, message="No Preview"):
+        """Create a placeholder thumbnail with a message"""
+        pixmap = QPixmap(120, 80)
+        pixmap.fill(Qt.lightGray)
+        
+        # You could add text to the placeholder here if needed
+        # This creates a simple gray rectangle placeholder
+        return pixmap
+
+    def create_result_card(self, item):
+        """Create a card widget for each search result"""
+        card = QFrame()
+        card.setFrameStyle(QFrame.StyledPanel)
+        card.setStyleSheet("""
+            QFrame {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: white;
+                margin: 2px;
+            }
+            QFrame:hover {
+                border: 2px solid #3498db;
+                background-color: #f8f9fa;
+            }
+        """)
+        
+        card_layout = QHBoxLayout()
+        card_layout.setContentsMargins(10, 10, 10, 10)
+        card_layout.setSpacing(15)
+        
+        # Thumbnail
+        thumbnail_label = QLabel()
+        thumbnail_pixmap = self.get_video_thumbnail(item['video_path'])
+        thumbnail_label.setPixmap(thumbnail_pixmap)
+        thumbnail_label.setFixedSize(120, 80)
+        thumbnail_label.setStyleSheet("border: 1px solid #ccc; border-radius: 4px;")
+        thumbnail_label.setScaledContents(True)
+        
+        # Content area
+        content_layout = QVBoxLayout()
+        content_layout.setSpacing(5)
+        
+        # Title and Score
+        title_score_layout = QHBoxLayout()
+        title_label = QLabel(item['title'])
+        title_label.setStyleSheet("font-weight: bold; font-size: 14px; color: #2c3e50;")
+        title_label.setWordWrap(True)
+        
+        score_label = QLabel(f"Score: {item['score']:.2f}")
+        score_label.setStyleSheet("font-weight: bold; color: #e74c3c; font-size: 12px;")
+        score_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
+        score_label.setFixedWidth(80)
+        
+        title_score_layout.addWidget(title_label, 1)
+        title_score_layout.addWidget(score_label, 0)
+        
+        # Best match text
+        match_label = QLabel("Best Match:")
+        match_label.setStyleSheet("font-weight: bold; font-size: 11px; color: #7f8c8d; margin-top: 5px;")
+        
+        sentence_label = QLabel(item['sentence'])
+        sentence_label.setWordWrap(True)
+        sentence_label.setStyleSheet("font-size: 11px; color: #34495e; background-color: #ecf0f1; padding: 5px; border-radius: 3px;")
+        sentence_label.setMaximumHeight(60)
+        
+        # Video path (smaller, less prominent)
+        path_label = QLabel(f"📁 {os.path.basename(item['video_path'])}")
+        path_label.setStyleSheet("font-size: 10px; color: #95a5a6; margin-top: 3px;")
+        
+        content_layout.addLayout(title_score_layout)
+        content_layout.addWidget(match_label)
+        content_layout.addWidget(sentence_label)
+        content_layout.addWidget(path_label)
+        content_layout.addStretch()
+        
+        card_layout.addWidget(thumbnail_label)
+        card_layout.addLayout(content_layout, 1)
+        
+        card.setLayout(card_layout)
+        return card
 
     def run_query(self):
         query = self.query_input.text().strip()
@@ -282,24 +417,33 @@ class QueryTab(QWidget):
             QMessageBox.warning(self, "Warning", "Please enter a query.")
             return
 
-        self.results_table.setRowCount(0)
+        # Clear previous results
+        while self.results_layout.count():
+            child = self.results_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
         try:
             matches = search_similar(query, top_k=10)
             ranked_results = rerank_top_matches(query, matches)
 
-            self.results_table.setRowCount(len(ranked_results))
-            for row, item in enumerate(ranked_results):
-                self.results_table.setItem(row, 0, QTableWidgetItem(f"{item['score']:.2f}"))
-                self.results_table.setItem(row, 1, QTableWidgetItem(item['title']))
-                self.results_table.setItem(row, 2, QTableWidgetItem(item['video_path']))
-                self.results_table.setItem(row, 3, QTableWidgetItem(item['sentence']))
-
-            self.results_table.resizeRowsToContents()
-            self.results_table.resizeColumnsToContents()
+            if not ranked_results:
+                no_results_label = QLabel("No results found for your query.")
+                no_results_label.setAlignment(Qt.AlignCenter)
+                no_results_label.setStyleSheet("color: #7f8c8d; font-style: italic; padding: 20px;")
+                self.results_layout.addWidget(no_results_label)
+            else:
+                for item in ranked_results:
+                    result_card = self.create_result_card(item)
+                    self.results_layout.addWidget(result_card)
+            
+            # Add stretch to push results to top
+            self.results_layout.addStretch()
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Search failed:\n{str(e)}")
+            error_label = QLabel(f"Search failed: {str(e)}")
+            error_label.setStyleSheet("color: #e74c3c; padding: 10px; background-color: #fadbd8; border-radius: 4px;")
+            self.results_layout.addWidget(error_label)
 
 
 
@@ -431,7 +575,7 @@ def download_file(self, source_path):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Video Processing & Query System")
+        self.setWindowTitle("MIRC Video Processing & Query System")
         self.resize(800, 600)
         self.setup_ui()
 
