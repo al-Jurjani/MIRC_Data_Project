@@ -1,6 +1,9 @@
 # Bismillah
 # Starting project on 07-01-1447 - 03-07-2025
 
+# Bismillah
+# Starting project on 07-01-1447 - 03-07-2025
+
 import sys
 import shutil
 import os
@@ -11,7 +14,7 @@ from PyQt5.QtWidgets import (
     QSplitter, QHeaderView
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QMimeData
-from PyQt5.QtGui import QDragEnterEvent, QDropEvent
+from PyQt5.QtGui import QDragEnterEvent, QDropEvent, QPixmap
 
 from pipeline import process_video
 from query_backend import search_similar
@@ -432,11 +435,73 @@ class MainWindow(QWidget):
         self.resize(800, 600)
         self.setup_ui()
 
+    def create_header(self):
+        """Create the logo and title header that stays visible across all tabs"""
+        header_widget = QWidget()
+        header_layout = QVBoxLayout()
+        header_layout.setContentsMargins(20, 10, 20, 10)
+        
+        # Logo
+        logo_label = QLabel()
+        logo_label.setAlignment(Qt.AlignCenter)
+        
+        # Try to load logo from file, fallback to placeholder text
+        logo_path = "main/mirc_logo.jpg"  # Change this to your logo file path
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path)
+            # Scale logo to reasonable size (max 100px height)
+            scaled_pixmap = pixmap.scaledToHeight(100, Qt.SmoothTransformation)
+            logo_label.setPixmap(scaled_pixmap)
+        else:
+            # Fallback: styled text logo
+            logo_label.setText("🎥 VIDEO PROCESSOR")
+            logo_label.setStyleSheet("""
+                font-size: 24px; 
+                font-weight: bold; 
+                color: #2c3e50; 
+                padding: 10px;
+                background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, 
+                    stop: 0 #3498db, stop: 1 #2980b9);
+                color: white;
+                border-radius: 8px;
+                margin: 5px;
+            """)
+        
+        # Title
+        title_label = QLabel("MIRC Video Processing & Query System")
+        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setStyleSheet("""
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #34495e; 
+            margin: 5px 0 15px 0;
+            padding: 5px;
+        """)
+        
+        header_layout.addWidget(logo_label)
+        header_layout.addWidget(title_label)
+        header_widget.setLayout(header_layout)
+        
+        return header_widget
+
     def setup_ui(self):
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # Add header (logo + title)
+        header = self.create_header()
+        layout.addWidget(header)
+        
+        # Add separator line
+        separator = QLabel()
+        separator.setFixedHeight(2)
+        separator.setStyleSheet("background-color: #bdc3c7; margin: 0 20px;")
+        layout.addWidget(separator)
 
         # Create tab widget
         self.tabs = QTabWidget()
+        self.tabs.setContentsMargins(10, 10, 10, 10)
         
         # Create tabs
         self.upload_tab = VideoUploadTab()
@@ -445,8 +510,7 @@ class MainWindow(QWidget):
         # Add tabs
         self.tabs.addTab(self.upload_tab, "Upload Videos")
         self.tabs.addTab(self.query_tab, "Query Database")
-        # self.tabs.addTab(self.create_database_browser_tab(), "Database Browser")
-        self.tabs.addTab(DatabaseBrowserTab(), "Database Browser")  # <- Add this line
+        self.tabs.addTab(DatabaseBrowserTab(), "Database Browser")
 
         layout.addWidget(self.tabs)
         self.setLayout(layout)
