@@ -588,9 +588,17 @@ class MainWindow(QWidget):
         # Logo
         logo_label = QLabel()
         logo_label.setAlignment(Qt.AlignCenter)
-        
+
         # Try to load logo from file, fallback to placeholder text
-        logo_path = "main/mirc_logo.jpg"  # Change this to your logo file path
+        # logo_path = "main/mirc_logo.jpg"  # Change this to your logo file path
+
+        def resource_path(relative_path):
+            """ Get absolute path to resource, works for dev and for PyInstaller """
+            if hasattr(sys, '_MEIPASS'):
+                return os.path.join(sys._MEIPASS, relative_path)
+            return os.path.join(os.path.dirname(__file__), relative_path)
+        logo_path = resource_path("mirc_logo.jpg")
+        
         if os.path.exists(logo_path):
             pixmap = QPixmap(logo_path)
             # Scale logo to reasonable size (max 100px height)
