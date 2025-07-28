@@ -14,6 +14,11 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QMimeData
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QImage
 import cv2
 import numpy as np
+import torch
+import subprocess
+import platform
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices, QCursor
 
 from pipeline import process_video
 from query_backend import search_similar
@@ -360,13 +365,22 @@ class QueryTab(QWidget):
         card_layout.setContentsMargins(10, 10, 10, 10)
         card_layout.setSpacing(15)
         
-        # Thumbnail
+        # Thumbnail - Make it clickable
         thumbnail_label = QLabel()
         thumbnail_pixmap = self.get_video_thumbnail(item['video_path'])
         thumbnail_label.setPixmap(thumbnail_pixmap)
         thumbnail_label.setFixedSize(120, 80)
-        thumbnail_label.setStyleSheet("border: 1px solid #ccc; border-radius: 4px;")
+        thumbnail_label.setStyleSheet("""
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+            cursor: pointer;
+        """)
         thumbnail_label.setScaledContents(True)
+        
+        # Make thumbnail clickable - capture video_path in closure
+        video_path = item['video_path']
+        thumbnail_label.mousePressEvent = lambda event, path=video_path: self.open_video(path)
+        thumbnail_label.setCursor(QCursor(Qt.PointingHandCursor))
         
         # Content area
         content_layout = QVBoxLayout()
@@ -375,8 +389,17 @@ class QueryTab(QWidget):
         # Title and Score
         title_score_layout = QHBoxLayout()
         title_label = QLabel(item['title'])
-        title_label.setStyleSheet("font-weight: bold; font-size: 14px; color: #2c3e50;")
+        title_label.setStyleSheet("""
+            font-weight: bold; 
+            font-size: 14px; 
+            color: #2c3e50;
+            cursor: pointer;
+        """)
         title_label.setWordWrap(True)
+        title_label.setCursor(QCursor(Qt.PointingHandCursor))
+        
+        # Make title clickable
+        title_label.mousePressEvent = lambda event, path=video_path: self.open_video(path)
         
         score_label = QLabel(f"Score: {item['score']:.2f}")
         score_label.setStyleSheet("font-weight: bold; color: #e74c3c; font-size: 12px;")
@@ -395,14 +418,41 @@ class QueryTab(QWidget):
         sentence_label.setStyleSheet("font-size: 11px; color: #34495e; background-color: #ecf0f1; padding: 5px; border-radius: 3px;")
         sentence_label.setMaximumHeight(60)
         
-        # Video path (smaller, less prominent)
+        # Video path with play button
+        path_layout = QHBoxLayout()
         path_label = QLabel(f"📁 {os.path.basename(item['video_path'])}")
         path_label.setStyleSheet("font-size: 10px; color: #95a5a6; margin-top: 3px;")
+        
+        # Add a small play button
+        play_button = QPushButton("▶️ Play")
+        play_button.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                padding: 3px 8px;
+                font-size: 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:pressed {
+                background-color: #21618c;
+            }
+        """)
+        play_button.setMaximumSize(60, 25)
+        play_button.clicked.connect(lambda checked, path=video_path: self.open_video(path))
+        
+        path_layout.addWidget(path_label)
+        path_layout.addStretch()
+        path_layout.addWidget(play_button)
         
         content_layout.addLayout(title_score_layout)
         content_layout.addWidget(match_label)
         content_layout.addWidget(sentence_label)
-        content_layout.addWidget(path_label)
+        content_layout.addLayout(path_layout)
         content_layout.addStretch()
         
         card_layout.addWidget(thumbnail_label)
@@ -410,6 +460,35 @@ class QueryTab(QWidget):
         
         card.setLayout(card_layout)
         return card
+
+    def open_video(self, video_path):
+        """Open the video file using the default system video player"""
+        try:
+            if not os.path.exists(video_path):
+                QMessageBox.warning(self, "File Not Found", f"Video file not found:\n{video_path}")
+                return
+            
+            # Get the system platform
+            system = platform.system()
+            
+            if system == "Windows":
+                # Windows: use start command
+                os.startfile(video_path)
+            elif system == "Darwin":  # macOS
+                # macOS: use open command
+                subprocess.run(["open", video_path])
+            else:  # Linux and other Unix-like systems
+                # Linux: use xdg-open
+                subprocess.run(["xdg-open", video_path])
+                
+            print(f"Opening video: {video_path}")
+            
+        except Exception as e:
+            # Fallback: try using Qt's QDesktopServices
+            try:
+                QDesktopServices.openUrl(QUrl.fromLocalFile(video_path))
+            except:
+                QMessageBox.critical(self, "Error", f"Could not open video file:\n{str(e)}")
 
     def run_query(self):
         query = self.query_input.text().strip()
@@ -445,50 +524,6 @@ class QueryTab(QWidget):
             error_label.setStyleSheet("color: #e74c3c; padding: 10px; background-color: #fadbd8; border-radius: 4px;")
             self.results_layout.addWidget(error_label)
 
-
-
-# def create_database_browser_tab(self):
-#     widget = QWidget()
-#     layout = QVBoxLayout()
-
-#     # Search bar
-#     search_bar = QLineEdit()
-#     search_bar.setPlaceholderText("Search by GUID or Title")
-#     layout.addWidget(search_bar)
-
-#     # Table
-#     table = QTableWidget()
-#     table.setColumnCount(6)
-#     table.setHorizontalHeaderLabels([
-#         "GUID", "Title", "Video", "Transcript", "Translation", "Summary"
-#     ])
-#     table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-#     layout.addWidget(table)
-
-#     def populate_table(data):
-#         table.setRowCount(len(data))
-#         for row, item in enumerate(data):
-#             table.setItem(row, 0, QTableWidgetItem(item["guid"]))
-#             table.setItem(row, 1, QTableWidgetItem(item["title"]))
-
-#             for col_idx, key in enumerate(["video_path", "transcript_path", "translation_path", "summary_path"], start=2):
-#                 button = QPushButton("Download")
-#                 path = item[key]
-#                 button.clicked.connect(lambda _, p=path: self.download_file(p))
-#                 table.setCellWidget(row, col_idx, button)
-
-#     def filter_table():
-#         term = search_bar.text().lower()
-#         filtered = [item for item in all_data if term in item["guid"].lower() or term in item["title"].lower()]
-#         populate_table(filtered)
-
-#     search_bar.textChanged.connect(filter_table)
-
-#     all_data = fetch_all_entries()
-#     populate_table(all_data)
-
-#     widget.setLayout(layout)
-#     return widget
 
 # For Third tab of Database Browser
 class DatabaseBrowserTab(QWidget):
@@ -644,6 +679,10 @@ class MainWindow(QWidget):
         # Add header (logo + title)
         header = self.create_header()
         layout.addWidget(header)
+
+        # Add GPU status indicator - INSERT THIS LINE
+        gpu_status = self.create_gpu_status_widget()
+        layout.addWidget(gpu_status)
         
         # Add separator line
         separator = QLabel()
@@ -666,6 +705,70 @@ class MainWindow(QWidget):
 
         layout.addWidget(self.tabs)
         self.setLayout(layout)
+
+    def create_gpu_status_widget(self):
+        """Create a widget that shows GPU/CPU status"""
+        status_widget = QWidget()
+        status_layout = QHBoxLayout()
+        status_layout.setContentsMargins(10, 5, 10, 5)
+        
+        # Check GPU availability
+        gpu_available = torch.cuda.is_available()
+        device_count = torch.cuda.device_count() if gpu_available else 0
+        
+        # Status icon and text
+        status_icon = QLabel()
+        status_text = QLabel()
+        
+        if gpu_available:
+            # GPU available
+            gpu_name = torch.cuda.get_device_name(0) if device_count > 0 else "Unknown GPU"
+            status_icon.setText("🔥")  # Fire emoji for GPU
+            status_text.setText(f"GPU Acceleration: {gpu_name}")
+            status_text.setStyleSheet("""
+                color: #27ae60; 
+                font-weight: bold; 
+                font-size: 12px;
+                padding: 3px;
+            """)
+            status_icon.setStyleSheet("font-size: 16px;")
+        else:
+            # CPU only
+            status_icon.setText("🔧")  # Wrench emoji for CPU
+            status_text.setText("CPU Processing Only")
+            status_text.setStyleSheet("""
+                color: #f39c12; 
+                font-weight: bold; 
+                font-size: 12px;
+                padding: 3px;
+            """)
+            status_icon.setStyleSheet("font-size: 16px;")
+        
+        # Memory info (if GPU available)
+        memory_info = QLabel()
+        if gpu_available and device_count > 0:
+            try:
+                memory_total = torch.cuda.get_device_properties(0).total_memory / 1024**3  # GB
+                memory_info.setText(f"VRAM: {memory_total:.1f}GB")
+                memory_info.setStyleSheet("color: #7f8c8d; font-size: 10px; margin-left: 10px;")
+            except:
+                memory_info.setText("")
+        
+        status_layout.addWidget(status_icon)
+        status_layout.addWidget(status_text)
+        status_layout.addWidget(memory_info)
+        status_layout.addStretch()  # Push everything to the left
+        
+        status_widget.setLayout(status_layout)
+        status_widget.setStyleSheet("""
+            QWidget {
+                background-color: #ecf0f1;
+                border-radius: 6px;
+                margin: 5px;
+            }
+        """)
+        
+        return status_widget
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
