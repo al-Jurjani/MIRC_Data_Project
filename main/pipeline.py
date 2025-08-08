@@ -75,7 +75,7 @@ collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
 # -------------------- Step 1: Transcribe video using Whisper --------------------
 def transcribe_video(video_path):
     print("Loading Whisper model...")
-    model = whisper.load_model("base")
+    model = whisper.load_model("base") # Use "medium" for better accuracy, can be changed to "base" or "large" as needed
     print("Transcribing the video...")
     result = model.transcribe(video_path)
     transcript = result['text']

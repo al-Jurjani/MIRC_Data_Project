@@ -2,7 +2,7 @@ from pymilvus import Collection, connections, utility, FieldSchema, DataType
 
 connections.connect("default", host="localhost", port="19530")
 
-collection = Collection("video_embeddings_v2")
+collection = Collection("video_embeddings_v3")
 
 # Check if index exists, create it if not
 if not collection.has_index():
