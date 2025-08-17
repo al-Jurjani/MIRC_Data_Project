@@ -45,16 +45,6 @@ def clear_database():
     collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
     logging.info("Milvus database cleared and recreated with new schema.")
 
-# Old fields
-# fields = [
-#     FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
-#     FieldSchema(name="video_path", dtype=DataType.VARCHAR, max_length=500),
-#     FieldSchema(name="transcript_path", dtype=DataType.VARCHAR, max_length=500),
-#     FieldSchema(name="translation_path", dtype=DataType.VARCHAR, max_length=500),
-#     FieldSchema(name="summary_path", dtype=DataType.VARCHAR, max_length=500),
-#     FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
-# ]
-
 # New fields
 fields = [
     FieldSchema(name="guid", dtype=DataType.VARCHAR, max_length=36, is_primary=True, auto_id=False),
@@ -66,10 +56,6 @@ fields = [
     FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384)
 ]
 schema = CollectionSchema(fields)
-# if MILVUS_COLLECTION_NAME not in list(Collection.list()):
-#     collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
-# else:
-#     collection = Collection(name=MILVUS_COLLECTION_NAME)
 collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
 
 # -------------------- Ensure Index Exists --------------------
@@ -246,7 +232,7 @@ def process_video(video_path, base_save_dir, progress_callback=None):
 
     # Ensure index exists after new inserts
     ensure_index(collection)
-    
+
     return guid
 
 # Example usage:
