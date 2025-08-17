@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 # -------------------- Milvus Configuration --------------------
-MILVUS_COLLECTION_NAME = "video_embeddings_v2"
+MILVUS_COLLECTION_NAME = "video_embeddings_v8"
 # connections.connect("default", host="localhost", port="19530")
 connections.connect("default", host="127.0.0.1", port="19530")
 
@@ -71,6 +71,32 @@ schema = CollectionSchema(fields)
 # else:
 #     collection = Collection(name=MILVUS_COLLECTION_NAME)
 collection = Collection(name=MILVUS_COLLECTION_NAME, schema=schema)
+
+# -------------------- Ensure Index Exists --------------------
+def ensure_index(collection):
+    """Ensure the embedding field has an index, create one if missing."""
+    has_index = False
+    try:
+        indexes = collection.indexes
+        if indexes:  # If there's already an index
+            has_index = True
+    except Exception as e:
+        logging.warning(f"Index check failed: {e}")
+
+    if not has_index:
+        print(f"🔧 Creating index on 'embedding' field for collection '{collection.name}'...")
+        collection.create_index(
+            field_name="embedding",
+            index_params={
+                "metric_type": "L2",   # or "COSINE" if you want semantic similarity
+                "index_type": "IVF_FLAT",
+                "params": {"nlist": 128}
+            }
+        )
+        print("✅ Index created.")
+
+# Ensure index right after collection initialization
+ensure_index(collection)
 
 # -------------------- Step 1: Transcribe video using Whisper --------------------
 def transcribe_video(video_path):
@@ -217,6 +243,10 @@ def process_video(video_path, base_save_dir, progress_callback=None):
 
     logging.info(f"Processing completed for GUID: {guid}")
     print(f"Processing completed for GUID: {guid}")
+
+    # Ensure index exists after new inserts
+    ensure_index(collection)
+    
     return guid
 
 # Example usage:

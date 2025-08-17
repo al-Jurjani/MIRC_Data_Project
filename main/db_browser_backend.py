@@ -29,7 +29,7 @@ import shutil
 import os
 
 connections.connect("default", host="127.0.0.1", port="19530")
-collection = Collection("video_embeddings_v2")
+collection = Collection("video_embeddings_v8")
 collection.load()
 
 def fetch_all_entries():
