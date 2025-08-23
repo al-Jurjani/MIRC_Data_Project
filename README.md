@@ -1,14 +1,12 @@
 # 🎥 MIRC Data Project – Video Transcription & Search Platform
 
-[**MIRC – Machine Intelligence Research Center (Pakistan)**](https://mirc.org.pk/)  
+[**MIRC – Al-Madinah Islamic Research Centre (Pakistan)**](https://mirc.org.pk/)  
 [Milvus Vector Database](https://milvus.io/) • [OpenAI Whisper](https://github.com/openai/whisper) • [Hugging Face Transformers](https://huggingface.co/transformers/)  
 
 ---
 
 ## 📌 Overview
 This project is a desktop application (built with **PyQt5**) that allows users to **ingest videos, transcribe, translate, summarize, and search them efficiently** using modern NLP and vector search techniques.
-
-It is developed as part of MIRC’s research efforts to make multimedia archives searchable with **AI + Vector Databases**.
 
 ---
 
@@ -113,30 +111,11 @@ python main/frontend.py
 
 ---
 
-## 📸 Screenshots
-_(add GUI screenshots here if available)_
-
----
-
 ## ⚠️ Notes & Gotchas
 - First run downloads large models (Whisper, DistilBART, BGE) → expect several GBs of downloads.
 - `ffmpeg` **must** be installed and on PATH.
 - Ensure collection name is consistent (`video_embeddings_v8`).
 - For large transcripts, summarization may need chunking.
-
----
-
-## 🧭 Roadmap
-- [ ] Add requirements.txt (currently inlined above)
-- [ ] Add `.env` config for Milvus host/port
-- [ ] Optimize summarization (chunk + merge)
-- [ ] Package into installer (PyInstaller)
-- [ ] Add test fixtures (small videos) for CI
-
----
-
-## 📜 License
-MIT License. See [LICENSE](LICENSE) file.
 
 ---
 
